@@ -1,4 +1,4 @@
-module go_lang_example1
+module go-gin-docker
 
 go 1.17
 
