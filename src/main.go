@@ -1,6 +1,5 @@
 package main
 
-import "C"
 import (
 	"log"
 	"net/http"
@@ -76,7 +75,7 @@ func main() {
 	// POST request to create product route
 	r.POST("/createproduct", func(context *gin.Context) {
 		// attaching the product with the Query Parameter
-		var createProduct CreateProduct
+		var createProduct Product
 		if err := context.ShouldBind(&createProduct); err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -84,11 +83,7 @@ func main() {
 
 		// creating the variable that binds the product
 		// returning the response
-		if err := db.Create(&createProduct).Error; err != nil {
-			log.Println("Error occurred while creating the record", err)
-			context.JSON(http.StatusBadRequest, gin.H{"error": "Update Failed"})
-			return
-		}
+		db.Create(&createProduct)
 
 		context.JSON(http.StatusOK, gin.H{"data": createProduct})
 	})
@@ -109,18 +104,16 @@ func main() {
 
 		// assign the body values to the Update Struct Model
 		var createProduct CreateProduct
-		if context.ShouldBindJSON(&createProduct) == nil {
-			log.Println(product)
+		if err := context.ShouldBindJSON(&createProduct); err != nil {
+			log.Println(createProduct)
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		// Update the record with the passed record struct
-		if err := db.Find(&product).Updates(createProduct).Error; err != nil {
-			log.Println("Error while updating record", err)
-		}
+		db.Find(&product).Updates(createProduct)
 
-		context.JSON(http.StatusOK, gin.H{"data": product})
+		context.JSON(http.StatusOK, gin.H{"data": createProduct})
 	})
 
 	// Delete Route: Delete the Product
