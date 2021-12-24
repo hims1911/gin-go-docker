@@ -5,23 +5,14 @@ FROM golang:${GO_VERSION}-alpine AS builder
 
 RUN apk update && apk add alpine-sdk git && rm -rf /var/cache/apk/*
 
-RUN mkdir -p /api
-WORKDIR /api
+WORKDIR /app
+ADD . /app
 
+RUN go build -o ./out/crud-app .
 
-COPY . .
-RUN go mod download
+EXPOSE 8080
 
-RUN go build -o ./app ./src/main.go
+ENTRYPOINT [ "./out/crud-app" ]
 
+LABEL Name=CRUD_APP Version=0.0.1
 
-#final stage
-FROM alpine:latest
-RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
-WORKDIR /api
-COPY --from=builder /api/app .
-COPY --from=builder /api/test.db .
-
-ENTRYPOINT ["./app"]
-LABEL Name=golangexample1 Version=0.0.1
-EXPOSE 3000
