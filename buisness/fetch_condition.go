@@ -24,13 +24,17 @@ func FetchCondition() {
 
 	svc := dynamodb.New(sess)
 
+	// Construct the filter builder with a name and value.
+	filt := expression.Name("Transaction.Status").Equal(expression.Value(false))
+
 	// Construct the Key condition builder
 	keyCond := expression.Key("ClientCode").Equal(expression.Value("12")).And(expression.Key("TransactionID").Equal(expression.Value("12")))
 
 	// Create the project expression builder with a names list.
-	proj := expression.NamesList(expression.Name("Transaction"))
+	proj := expression.NamesList(expression.Name("TransactionID"), expression.Name("ClientCode"))
 
-	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj).Build()
+	//expr, err := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj).Build()
+	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).WithFilter(filt).WithProjection(proj).Build()
 	if err != nil {
 		log.Fatal("error building the expression")
 	}
@@ -41,6 +45,7 @@ func FetchCondition() {
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
 		KeyConditionExpression:    expr.KeyCondition(),
+		FilterExpression:          expr.Filter(),
 		ProjectionExpression:      expr.Projection(),
 		TableName:                 aws.String("transaction"),
 	}
